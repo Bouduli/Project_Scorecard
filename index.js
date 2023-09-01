@@ -1,6 +1,7 @@
 //Players object 
 const players = {};
 let court = [];
+
 //Fetch the game court... 
 loadCourt(4);
 async function loadCourt(count = 14){
@@ -21,6 +22,7 @@ async function loadCourt(count = 14){
 
 //Functionality for adding a player. To be used with Eventlistener. 
 function addPlayer(name){
+    if (players[name]) return console.error("name is already present")
     players[name] = {};
 
 
@@ -29,7 +31,7 @@ function addPlayer(name){
 
     //Displays a header for registered players AND the button to start a game
     if(!nameDiv.childElementCount) {
-
+        nameDiv.classList.add("nameDiv");
         //The header isn't shown due to possible confusion 
         let h2 = document.createElement("h2");
         h2.innerText = "Players added to game:";
@@ -111,16 +113,54 @@ function renderStage(stage){
     stageDiv.classList.add("stageDiv");
     document.getElementById("StageWrapper").appendChild(stageDiv);
 
-    //Stage number/id
+    //Stage number and par-value
     let h3 = document.createElement("h3");
-    h3.innerText = "#" + stage.id;
+    h3.innerText = `# ${stage.id} - Par: ${stage.par}`;
+    h3.classList.add("stageHeading")
     stageDiv.appendChild(h3);
 
     //Stage info
     let info = document.createElement("i");
     info.innerText = "Requirements: " + stage.info;
     stageDiv.appendChild(info);
+    
+    //Break tag to make some space between the stage info and scoreboard.
+    stageDiv.appendChild(document.createElement("br"));
 
+    
+    //Div for scoreboards 
+    let scoreboard = document.createElement("div");
+    scoreboard.classList.add("scoreDiv");
+    stageDiv.appendChild(scoreboard);
+
+    //Individual score elements for every player
+    for(let p in players){
+        
+        //scoreDiv
+        let scoreDiv = document.createElement("div");
+        scoreDiv.classList.add("scoreDiv");
+        stageDiv.appendChild(scoreDiv);
+
+
+        // playerName
+        let playerName = document.createElement("p");
+        playerName.innerText = p;
+        scoreDiv.appendChild(playerName);
+
+        //score
+        let score = document.createElement("input");
+        score.type = "number";
+        score.addEventListener("change", (e)=>{
+            // players[p][stage.id] = e.target.value
+            console.log(e.target.value);
+        });
+        scoreDiv.appendChild(score);
+
+    }
+
+
+
+    
 
     
 }
