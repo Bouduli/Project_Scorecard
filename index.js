@@ -1,17 +1,17 @@
 //Players object 
 const players = {};
 let court = [];
-let courtData;
 //Fetch the game court... 
 loadCourt(4);
 async function loadCourt(count = 14){
     try {
         //Works as intended... for now. 
         let response = await fetch("https://fpgscore.fredricpersson2.repl.co/info.json");
-        courtData = await response.json();
+        const courtData = await response.json();
         
         //Takes a slice out of the court in order to have shorter games. 
         court = courtData.court.slice(0,count);
+        console.log(`Court loaded with: ${count} stages...`);
     } catch (error) {
         console.log(error   );
     }
@@ -82,7 +82,8 @@ function startGame(ev){
     */
     if(!ev.isTrusted) return Error("Please add a player and use the button that appears instead...");
 
-    
+    //Remove start menu
+    document.getElementById("Start").remove();
     court.forEach(stage => renderStage(stage));
 
     
@@ -120,9 +121,8 @@ function renderStage(stage){
     info.innerText = "Requirements: " + stage.info;
     stageDiv.appendChild(info);
 
-    
+
     
 }
-
 
 
