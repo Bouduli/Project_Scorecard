@@ -28,27 +28,39 @@ async function loadCourt(count = 14){
 
 //Functionality for adding a player. To be used with Eventlistener. 
 function addPlayer(name){
+    //The player is added to the player object, which is also saved in localStorage. 
     if (!players[name]) players[name] = {};
+    persistToLocalStorage();
 
-
+    //
     //DISPLAYING NAMES OF PLAYERS
-    let nameDiv = document.querySelector("#Start div");
+    //
 
-    //Displays a header for registered players AND the button to start a game
-    if(!nameDiv.childElementCount) {
+    //Tries to find the div where names would be displayed
+    let nameDiv = document.querySelector("#Start .nameDiv");
+    //If such a div cannot be found, it and it's content is displayed
+    if(!nameDiv) {
+        //Div to hold the names of registered players. 
+        nameDiv = document.createElement("div");
         nameDiv.classList.add("nameDiv");
-        //The header isn't shown due to possible confusion 
+        document.querySelector("#Start").appendChild(nameDiv);
+
+        //Header to tell a user what the names below are. 
         let h2 = document.createElement("h2");
         h2.innerText = "Players added to game:";
         nameDiv.appendChild(h2);
 
-
+        //Button to start the game is also shown. 
         let button = document.createElement("button");
+        button.id = "StartButton"
         button.innerText = "Start Game!!";
         button.addEventListener("click", startGame);
         nameDiv.appendChild(button);
     } 
-    //Wrapper div to contain the name and deletebutton for a player. 
+
+    //THE NAMES
+
+    //Wrapper div to contain the NAME and deletebutton for a player. 
     let nameWrapper = document.createElement("div");
     nameWrapper.classList.add("nameWrapper");
     nameDiv.appendChild(nameWrapper);
@@ -62,10 +74,21 @@ function addPlayer(name){
     let button = document.createElement("button");
     button.innerText="Remove";
     nameWrapper.appendChild(button);
+    //When a player is removed - they are removed from the player object and from the display. 
     button.addEventListener("click", ()=>{
+        //removing from display
         nameWrapper.remove();
+
+        //Removing from the player object
         delete players[name];
+
+        //Changes are made to the player object - thus a save to localStorage is performed.
         persistToLocalStorage();
+
+        /*When the last player is removed then the div contianing 
+        the names is removed (along with the button to start a game). */
+
+        if(!Object.keys(players).length) document.querySelector(".nameDiv").remove();
     });
 
 
@@ -101,7 +124,8 @@ function startGame(ev){
     Event.isTrusted is checked, as a modified event being sent into the function would cause it to 
     run otherwhise - which is sub optimal. Using encapsulation would be preferential. 
     */
-    if(!ev.isTrusted) return Error("Please add a player and use the button that appears instead...");
+    if(!ev.isTrusted) return console.error("Please add a player and press the button again");
+    if(!Object.keys(players).length) return console.error("There are no players");
 
     //Remove start menu
     document.getElementById("Start").remove();
@@ -179,6 +203,24 @@ function renderStage(stage){
         score.addEventListener("change", (e)=>{
             players[p][stage.id] = e.target.value;
             console.log(players[p]);
+
+            /*CALCULATE TOTAL SCORE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+             HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+              HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+               HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                 HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                   HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                    HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                     HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                      HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                       HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                        HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                         HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                          HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
+                          
+             */
             persistToLocalStorage();
 
         });
@@ -193,5 +235,4 @@ function persistToLocalStorage(){
     localStorage.setItem("players", JSON.stringify(players));
 
 }
-
 
