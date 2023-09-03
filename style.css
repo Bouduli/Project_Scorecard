@@ -1,0 +1,54 @@
+*{
+    margin: 0;padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+#Start{
+    padding:4%;
+}
+#Start > form{
+    display:flex;
+    width:100%;
+    flex:12
+}
+#Start > form > *{
+    width:max-content; margin:auto;
+}
+.nameDiv{
+    display:grid;
+    padding:30px;
+    height:90vh;
+}
+.nameDiv button {
+    height:min-content;
+    width:max-content;
+}
+
+#StageWrapper{
+    display:grid; place-items: center;
+    padding:4%;
+    gap: 4%;
+
+}
+.stageDiv{
+    display:grid;
+    place-items: center;
+    border: 3px solid black;
+    border-radius:3px;
+    padding: 7px;
+    width:90%
+}
+.stageHeading{
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    text-decoration: underline;
+
+}
+.scoreboard{
+    width:100%;
+}
+.scoreDiv, .nameWrapper{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+
+}
