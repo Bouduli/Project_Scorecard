@@ -154,6 +154,8 @@ function renderStage(stage){
         score.addEventListener("change", (e)=>{
             players[p][stage.id] = e.target.value;
             console.log(players[p]);
+            //players[p]["score"] = calcPlayerTotal(p);
+            
         });
         scoreDiv.appendChild(score);
         scoreDiv.appendChild(document.createElement("br"));
@@ -164,6 +166,18 @@ function renderStage(stage){
 
     
 
+    
+}
+function calcPlayerTotal(_p){
+    let scores = {};
+    let totalScore=0;
+    console.log(court);
+    court.forEach(c=>scores[c.id]=_p[c.id]);
+    for(let s in scores){
+        totalScore += scores[s];
+    }
+    console.log(totalScore);
+    
     
 }
 
