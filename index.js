@@ -1,5 +1,11 @@
 //Players object 
-const players = {};
+const players = JSON.parse(localStorage.getItem("players")) || {};
+
+//This is black magic fuckery to display players collected from localStorage. 
+Object.keys(players).forEach(p=>{
+    if(p=="") return;
+    addPlayer(p);
+});
 let court = [];
 
 //Fetch the game court... 
@@ -22,8 +28,7 @@ async function loadCourt(count = 14){
 
 //Functionality for adding a player. To be used with Eventlistener. 
 function addPlayer(name){
-    if (players[name]) return console.error("name is already present")
-    players[name] = {};
+    if (!players[name]) players[name] = {};
 
 
     //DISPLAYING NAMES OF PLAYERS
@@ -43,11 +48,25 @@ function addPlayer(name){
         button.addEventListener("click", startGame);
         nameDiv.appendChild(button);
     } 
+    //Wrapper div to contain the name and deletebutton for a player. 
+    let nameWrapper = document.createElement("div");
+    nameWrapper.classList.add("nameWrapper");
+    nameDiv.appendChild(nameWrapper);
 
     //Displays the names of registered players. 
     let displayName = document.createElement("p");
     displayName.innerText = name;
-    nameDiv.appendChild(displayName);
+    nameWrapper.appendChild(displayName);
+
+    //Displays a button to remove a registered player. 
+    let button = document.createElement("button");
+    button.innerText="Remove";
+    nameWrapper.appendChild(button);
+    button.addEventListener("click", ()=>{
+        nameWrapper.remove();
+        delete players[name];
+        persistToLocalStorage();
+    });
 
 
 }
@@ -151,20 +170,27 @@ function renderStage(stage){
         let score = document.createElement("input");
         score.type = "number";
         score.placeholder = "Enter score";
+
+        //If there is a score saved in local storage - it is automatically filled to the input element
+        if(p[stage.id]){
+            score.value = players[p][stage.id];
+        }
+
         score.addEventListener("change", (e)=>{
             players[p][stage.id] = e.target.value;
             console.log(players[p]);
+            persistToLocalStorage();
+
         });
         scoreDiv.appendChild(score);
         scoreDiv.appendChild(document.createElement("br"));
 
-    }
-
-
-
-    
-
-    
+    }    
 }
 
+function persistToLocalStorage(){
+    if(!Object.keys(players).length) return localStorage.clear();
+    localStorage.setItem("players", JSON.stringify(players));
+
+}
 
