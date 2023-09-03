@@ -130,7 +130,7 @@ function renderStage(stage){
     
     //Div for scoreboards 
     let scoreboard = document.createElement("div");
-    scoreboard.classList.add("scoreDiv");
+    scoreboard.classList.add("scoreboard");
     stageDiv.appendChild(scoreboard);
 
     //Individual score elements for every player
@@ -139,7 +139,7 @@ function renderStage(stage){
         //scoreDiv
         let scoreDiv = document.createElement("div");
         scoreDiv.classList.add("scoreDiv");
-        stageDiv.appendChild(scoreDiv);
+        scoreboard.appendChild(scoreDiv);
 
 
         // playerName
@@ -150,11 +150,13 @@ function renderStage(stage){
         //score
         let score = document.createElement("input");
         score.type = "number";
+        score.placeholder = "Enter score";
         score.addEventListener("change", (e)=>{
-            // players[p][stage.id] = e.target.value
-            console.log(e.target.value);
+            players[p][stage.id] = e.target.value;
+            console.log(players[p]);
         });
         scoreDiv.appendChild(score);
+        scoreDiv.appendChild(document.createElement("br"));
 
     }
 
