@@ -125,16 +125,37 @@ function startGame(ev){
     run otherwhise - which is sub optimal. Using encapsulation would be preferential. 
     */
     if(!ev.isTrusted) return console.error("Please add a player and press the button again");
+
+    //If there are no players present, the code will exit and the game is not started 
+    //- however this should not occur.
     if(!Object.keys(players).length) return console.error("There are no players");
 
     //Remove start menu
     document.getElementById("Start").remove();
+
+    //Renders the visual element for each stage. 
     court.forEach(stage => renderStage(stage));
+
+    //Displays a button to end the game. 
+    let endButton = document.createElement("button");
+    endButton.innerText="End Game";
+
+    //Checks are performed to make sure that every player has a registered score for each stage. 
+    endButton.addEventListener("click", ()=>{
+        let gameIsCompleteBool = true;
+        court.forEach(stage=>{
+            if(!players[stage.id]){
+                gameIsCompleteBool = false;
+                return
+            }
+        })
+        if(gameIsCompleteBool) return endGame();
+    });
 
     
 }
 
-//Renders the visual element of each stage. 
+//Renders the visual element of each stage and defines behaviour of input elements. 
 function renderStage(stage){
     
     /*Inspecting the JSON collected for the court - it shows that every stage has a id, par value
@@ -201,9 +222,15 @@ function renderStage(stage){
         }
 
         score.addEventListener("change", (e)=>{
+            //Upon changing the score in the input field, it should be reflected
+            //on the related player object. 
             players[p][stage.id] = e.target.value;
+
+            //Calculating the total score is performed here
             players[p]['score'] = 0; 
             court.forEach(stage=>players[p]['score']+= parseInt(players[p][stage.id]));
+            
+            //Debugging 
             console.log(players[p]);
             
             /*CALCULATE TOTAL SCORE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
@@ -232,6 +259,14 @@ function renderStage(stage){
     }    
 }
 
+//Button to end the game and display 
+function endGame(){
+    
+    //Shows a leaderboard
+    let leaderboard = document.createElement("div");
+    leaderboard.id = "leaderboard";
+    document.body.appendChild(leaderboard);
+}
 function persistToLocalStorage(){
     if(!Object.keys(players).length) return localStorage.clear();
     localStorage.setItem("players", JSON.stringify(players));
