@@ -202,7 +202,6 @@ function renderStage(stage){
 
         score.addEventListener("change", (e)=>{
             players[p][stage.id] = e.target.value;
-            console.log(players[p]);
             players[p]['score'] = 0; 
             court.forEach(stage=>players[p]['score']+= parseInt(players[p][stage.id]));
             console.log(players[p]);
