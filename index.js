@@ -203,7 +203,8 @@ function renderStage(stage){
         score.addEventListener("change", (e)=>{
             players[p][stage.id] = e.target.value;
             console.log(players[p]);
-
+            
+            
             /*CALCULATE TOTAL SCORE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
              HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
               HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 

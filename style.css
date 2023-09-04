@@ -50,5 +50,9 @@
 .scoreDiv, .nameWrapper{
     display:grid;
     grid-template-columns: 1fr 1fr;
+    align-items: center;
 
+}
+.scoreDiv p{
+    justify-self: center;
 }
