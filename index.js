@@ -182,12 +182,12 @@ function playerHasScored(player){
     let playerHasScoredCorrectly = true;
     court.forEach(stage=>{
     
-        console.log(player[stage.id]);
+        //console.log(player[stage.id]);
         
 
         if(!player[stage.id]) return gameIsComplete = false;      
     });
-    console.log("Player has scored: " + playerHasScoredCorrectly)
+    //console.log("Player has scored: " + playerHasScoredCorrectly)
     return playerHasScoredCorrectly;
     
 }
@@ -277,8 +277,10 @@ function renderStage(stage){
 
 //Displays a leaderboard. 
 function endGame(){
+    //Individual stage info is removed
     document.querySelector("#StageWrapper").remove();
-    
+
+    //a leaderboard div is created and a heading for it. 
     let leaderboard = document.createElement("div");
     leaderboard.id = "leaderboard";
     document.body.appendChild(leaderboard);
@@ -289,7 +291,19 @@ function endGame(){
     leaderboard.appendChild(h1);
 
 
-    Object.keys(players).forEach(name=>{
+    //The players are sorted with Object.keys(...).toSorted(...) which returns an array of the player keys
+    //sorted by their scores in ascending order (Lowest score first).
+    let sortedPlayers = Object.keys(players).toSorted((a,b)=>{
+        let _a = parseInt(players[a]['score']);
+        let _b = parseInt(players[b]['score']);
+
+        //console.log(`Keys are: ${a} and ${b} - ` + "a: " + _a + " b: " + _b + " -- a-b equals: " + (_a-_b));
+        return _a-_b;
+    });
+    console.log(sortedPlayers);
+    
+    //The array of sorted 'player keys' is looped over to display the leaderboard in correct order. 
+    sortedPlayers.forEach(name=>{
         
     
         // diaplays name and score for each player
@@ -305,7 +319,7 @@ function endGame(){
         let score = document.createElement("i");
         score.innerText= players[name]['score'];
         nameWrapper.appendChild(score);
-    })
+    });
 
 }
 function persistToLocalStorage(){
