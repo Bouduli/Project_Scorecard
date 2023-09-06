@@ -54,6 +54,12 @@ function registerPlayer(e){
     displayPlayer(name);
 }
 
+//Functionality to save to localStorage. 
+function persistToLocalStorage(){
+    if(!Object.keys(players).length) return localStorage.clear();
+    localStorage.setItem("players", JSON.stringify(players));
+
+}
 
 //Functionality to display a player - Used either when a player is loaded from localStorage, or when created 
 //through the 'registerForm' 
@@ -124,21 +130,17 @@ function displayPlayer(name){
 
 }
 
-//TODO TODO TODO TODO
 // function that is run when game is started with the startGame Button.
-
 function startGame(ev){
     /*Since the function can be called by a user with the console to prevent unintentional use
-    Event.isTrusted is checked, as a modified event being sent into the function would cause it to 
-    run otherwhise - which is sub optimal. Using encapsulation would be preferential. 
-    */
+    Event.isTrusted is checked, an event created through console by a user has the property iTrusted=false. 
+    Starting the game by other means than the button would lead to weird behaviour - therefore this if-statement prevents it. */
     if(!ev.isTrusted) return console.error("Please add a player and press the button again");
 
-    //If there are no players present, the code will exit and the game is not started 
-    //- however this should not occur through regular usage. 
+    //If there are no players present, the code will exit and the game is not started
     if(!Object.keys(players).length) return console.error("There are no players");
 
-    //Remove start menu
+    //Removes the start menu - as it's obsolete when the game has begun. 
     document.getElementById("Start").remove();
 
     //Renders the visual element for each stage. 
@@ -151,58 +153,12 @@ function startGame(ev){
     document.querySelector("#StageWrapper").appendChild(endButton);
     
 
-    //Checks are performed to make sure that every player has a registered score for each stage. 
-    endButton.addEventListener("click", ()=>{
-        //Bool that is used to determine wether or not the game is actually complete or not. 
-        let gameIsComplete = true;
-
-        /* Each players score is checked to make sure they have scored each stage (which otherwise would)
-        Affect the scores to an unfair advantage (if the score calculates that is - most of the time it)
-        becomes "NaN". */
-        Object.keys(players).forEach(p => {
-            if(!Object.keys(players[p]).length) return gameIsComplete = false;
-            gameIsComplete=playerHasScored(players[p]);
-            
-            //Because i don't want to keep track of which player hasn't scored correctly - the loop over players is interrupted as gameIsComplete should be false. 
-            if(!gameIsComplete) return;
-        });
-        
-        //If the game isn't complete, this errors to console for now. 
-        if(!gameIsComplete)return console.error("All players hasn't scored correctly on each stage");
-
-        //If we reach this else block, then we know for sure that the game is finished and that each player has scored correctly. 
-        else {
-            endGame();
-        }
-    });
+    //Button to end the game - endGame function provides necessary logic to end the game safely 
+    //and to display the resuls from the game. 
+    endButton.addEventListener("click", endGame);
     
     
 }
-
-
-//Functionality to add the score of a particular hole to a player.  
-function addScore(name, hole, score){
-    players[name][hole] = score;
-
-}
-
-
-
-
-function playerHasScored(player){
-    let playerHasScoredCorrectly = true;
-    court.forEach(stage=>{
-    
-        //console.log(player[stage.id]);
-        
-
-        if(!player[stage.id]) return gameIsComplete = false;      
-    });
-    //console.log("Player has scored: " + playerHasScoredCorrectly)
-    return playerHasScoredCorrectly;
-    
-}
-
 //Renders the visual element of each stage and defines behaviour of input elements. 
 function renderStage(stage){
     
@@ -211,19 +167,19 @@ function renderStage(stage){
     the code errors in console. */
     if(!stage.id || !stage.par || !stage.info)return console.error(`The stage was incorrectly configured - Stage: ${stage}`);
 
-    //A wrapper div for the stage elements are created if such a div cannot be found. 
-    if(!document.getElementById("StageWrapper")){
+    //A wrapper div for the stage elements, StageWrapper,  is created if such a div cannot be found. 
+    let StageWrapper = document.getElementById("StageWrapper");
+    if(!StageWrapper){
         
-        let stageWrapperDiv = document.createElement("div");
-        stageWrapperDiv.id = "StageWrapper";
-        document.body.appendChild(stageWrapperDiv);
+        StageWrapper = document.createElement("div");
+        StageWrapper.id = "StageWrapper";
+        document.body.appendChild(StageWrapper);
     }
-
     /*A div for a single stage is created, a class to be css:ed is added, and is 
     then added to the StageWrapper*/
     const stageDiv = document.createElement("div");
     stageDiv.classList.add("stageDiv");
-    document.getElementById("StageWrapper").appendChild(stageDiv);
+    StageWrapper.appendChild(stageDiv);
 
     //Stage number and par-value
     let h3 = document.createElement("h3");
@@ -259,24 +215,29 @@ function renderStage(stage){
         playerName.innerText = p;
         scoreDiv.appendChild(playerName);
 
-        //score
+        //score input element
         let score = document.createElement("input");
         score.type = "number";
         score.min = "1";
         score.required = true;
         score.placeholder = "Enter score";
+        scoreDiv.appendChild(score);
 
-        //If there is a score saved in local storage - it is automatically filled to the input element
+        //if the score is changed - relevant logic for calculating totalscore and saving to localStorage
+        //is performed in scoreChanged function. 
+        score.addEventListener("change",(e)=>scoreChanged(e,p, stage));
+
+        //If there already is a score (which would be loaded from localStorage.) then it is displayed as the value. 
         if(p[stage.id]){
             score.value = players[p][stage.id];
         }
 
-        score.addEventListener("change",(e)=>scoreChanged(e,p, stage));
-        scoreDiv.appendChild(score);
+        //Adds a simple break tag to make som easy space between inputs. 
         scoreDiv.appendChild(document.createElement("br"));
 
     }
 }
+//Fired when score is changed. e: event, p: player. 
 function scoreChanged(e, p, stage){
     //Upon changing the score in the input field, it should be reflected
     //on the related player object. 
@@ -291,8 +252,40 @@ function scoreChanged(e, p, stage){
 
 }
 
-//Displays a leaderboard. 
-function endGame(){
+//Function to perform logic to see if the game is supposed to be ending - afterwards it will display the leaderBoards 
+function endGame(ev){
+
+    //keys of all the players - reused several times therefore a const var early. 
+    const KEYS = Object.keys(players);
+
+    //bool to see wether or not we are ending the game.
+    let endingGame = true;
+    
+
+    //if there are no player keys somehow - the game cannot end as there are no players. 
+    if (!KEYS.length) return console.error("no players - can't end game");
+
+    //We are looping over the keys for each player, and for each stage - in order to determine if all players
+    /*Have inputted a score on each of the stages. This has two reasons for which - expand this comment block. 
+        No.1 - If a player hasn't scored on each hole - then the game isn't finished - trying to finish before
+               each player has scored would give the player an advantage (if their score is regarded as zero or one.)
+        No. 2 - If a player hasn't scored on each hole - or more importantly, if their score is an empty string from 
+                the input element - their calculated score would be NaN, as it's trying to calculate (number + 'empty string') as an integer. 
+                */
+
+    //If endingGame bool becomes therefore both forEach loops should return false. If both forEach's complete successfully - the bool should be true. 
+    KEYS.forEach(player => {
+        court.forEach(stage =>{
+            
+            if(!players[player][stage.id]) return endingGame = false;
+            else endingGame = true;
+        });
+        console.log(`endingGame is: ${endingGame}; for player: ${player}`);
+        if(!endingGame) return;
+    });
+    //If we are not ending the game - function is returned with a console error
+    if(!endingGame)return console.error("All players hasn't scored correctly on each stage - can't end game");
+    
     //Individual stage info is removed
     document.querySelector("#StageWrapper").remove();
 
@@ -307,9 +300,9 @@ function endGame(){
     leaderboard.appendChild(h1);
 
 
-    //The players are sorted with Object.keys(...).toSorted(...) which returns an array of the player keys
+    //The players are sorted with KEYS.toSorted(...) which returns an array of the player keys
     //sorted by their scores in ascending order (Lowest score first).
-    let sortedPlayers = Object.keys(players).toSorted((a,b)=>{
+    let sortedPlayers = KEYS.toSorted((a,b)=>{
         let _a = parseInt(players[a]['score']);
         let _b = parseInt(players[b]['score']);
 
@@ -338,9 +331,5 @@ function endGame(){
     });
 
 }
-function persistToLocalStorage(){
-    if(!Object.keys(players).length) return localStorage.clear();
-    localStorage.setItem("players", JSON.stringify(players));
 
-}
 
