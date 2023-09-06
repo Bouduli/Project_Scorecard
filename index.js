@@ -2,15 +2,13 @@
 const players = JSON.parse(localStorage.getItem("players")) || {};
 
 //This is black magic fuckery to display players collected from localStorage. 
-Object.keys(players).forEach(p=>{
-    if(p=="") return;
-    displayPlayer(p);
-});
-let court = [];
+Object.keys(players).forEach(p=>displayPlayer(p));
 
+
+let court = [];
 //Fetch the game court... 
 loadCourt(4);
-async function loadCourt(count = 14){
+async function loadCourt(count = 18){
     try {
         //Works as intended... for now. 
         let response = await fetch("https://fpgscore.fredricpersson2.repl.co/info.json");
@@ -26,82 +24,9 @@ async function loadCourt(count = 14){
     
 }
 
-//Functionality for adding a player. To be used with Eventlistener. 
-function displayPlayer(name){
-
-   
-
-
-    //
-    //DISPLAYING NAMES OF PLAYERS
-    //
-
-    //Tries to find the div where names would be displayed
-    let nameDiv = document.querySelector("#Start .nameDiv");
-    //If such a div cannot be found, it and it's content is displayed
-    if(!nameDiv) {
-        //Div to hold the names of registered players. 
-        nameDiv = document.createElement("div");
-        nameDiv.classList.add("nameDiv");
-        document.querySelector("#Start").appendChild(nameDiv);
-
-        //Header to tell a user what the names below are. 
-        let h2 = document.createElement("h2");
-        h2.innerText = "Players added to game:";
-        nameDiv.appendChild(h2);
-
-        //Button to start the game is also shown. 
-        let button = document.createElement("button");
-        button.id = "StartButton"
-        button.innerText = "Start Game!!";
-        button.addEventListener("click", startGame);
-        nameDiv.appendChild(button);
-    } 
-
-    //THE NAMES
-
-    //Wrapper div to contain the NAME and deletebutton for a player. 
-    let nameWrapper = document.createElement("div");
-    nameWrapper.classList.add("nameWrapper");
-    nameDiv.appendChild(nameWrapper);
-
-    //Displays the names of registered players. 
-    let displayName = document.createElement("p");
-    displayName.innerText = name;
-    nameWrapper.appendChild(displayName);
-
-    //Displays a button to remove a registered player. 
-    let button = document.createElement("button");
-    button.innerText="Remove";
-    nameWrapper.appendChild(button);
-    //When a player is removed - they are removed from the player object and from the display. 
-    button.addEventListener("click", ()=>{
-        //removing from display
-        nameWrapper.remove();
-
-        //Removing from the player object
-        delete players[name];
-
-        //Changes are made to the player object - thus a save to localStorage is performed.
-        persistToLocalStorage();
-
-        /*When the last player is removed then the div contianing 
-        the names is removed (along with the button to start a game). */
-
-        if(!Object.keys(players).length) document.querySelector(".nameDiv").remove();
-    });
-
-
-}
-
-//Functionality to add the score of a particular hole to a player.  
-function addScore(name, hole, score){
-    players[name][hole] = score;
-
-}
-
-//Gives the form functionality to add a player - Input validation is taking place here. 
-document.getElementById("registerForm").addEventListener("submit", (e)=>{
+//Functionality for RegisterForm to be able to register a player. 
+document.getElementById("RegisterForm").addEventListener("submit", (e)=>registerPlayer(e));
+function registerPlayer(e){
     //Prevents the forms usual get-request.
     e.preventDefault();
 
@@ -111,22 +36,95 @@ document.getElementById("registerForm").addEventListener("submit", (e)=>{
     //After the name is collected, the input is cleared.
     e.target.playerName.value = ""; 
 
-    //If the name is empty or was full of whitespace characters (removed by trim) - the function will return. 
+    //If the name is empty or was full of whitespace characters (removed by trim) - the function should return
+    //as we don't wan't player names to be empty. 
     if(!name) return;
 
-    //if there is a player with a duplicate name, the function returns as nothing should happen here. 
+    //if there is a player with that same name - the function should return as we don't want
+    //players with duplicate names
     if (players[name]) return;
 
-    //If there's no player with that name, it is 'created' by adding it to the object.
+    //if there is a name that isn't duplicated - the player is added to the player object. 
     players[name] = {};
 
     //we also save to localStorage. 
     persistToLocalStorage();
  
-    //Then the player name element is rendered with the function below. 
+    //Finally a player is rendered with displayPlayer function. 
     displayPlayer(name);
-});
+}
 
+
+//Functionality to display a player - Used either when a player is loaded from localStorage, or when created 
+//through the 'registerForm' 
+function displayPlayer(name){
+    //If the name somehow is empty - which it shouldn't be without user tampering in console
+    //or in localstorage - the function will return. (we dont render invisible players around here...)
+    if(name =="") return;
+
+    //Tries to find the div where names would be displayed
+    let NameWrapper = document.querySelector("#NameWrapper");
+    //If such a div cannot be found, the div and it's content is created and displayed. 
+    if(!NameWrapper) {
+        //Div to hold the names of registered players. 
+        NameWrapper = document.createElement("div");
+        NameWrapper.id="NameWrapper";
+        document.querySelector("#Start").appendChild(NameWrapper);
+
+        //Header to tell a user what the names below are. 
+        let h2 = document.createElement("h2");
+        h2.innerText = "Players added to game:";
+        NameWrapper.appendChild(h2);
+
+        //Button to start the game is also shown. 
+        let button = document.createElement("button");
+        button.id = "StartButton"
+        button.innerText = "Start Game!!";
+
+        //StartGame is defined below registerPlayer.
+        button.addEventListener("click", startGame);
+        NameWrapper.appendChild(button);
+    } 
+
+    //DISPLAYING THE NAMES
+
+    //Wrapper div to contain the NAME and deletebutton for a player. 
+    let nameDiv = document.createElement("div"); 
+    nameDiv.classList.add("nameDiv");
+    NameWrapper.appendChild(nameDiv); 
+
+    //Displays the names of registered players. 
+    let displayName = document.createElement("p");
+    displayName.innerText = name;
+    nameDiv.appendChild(displayName);
+
+    //Displays a button to remove a registered player. 
+    let button = document.createElement("button");
+    button.innerText="Remove";
+    nameDiv.appendChild(button); 
+
+    //When a player is removed - they are removed from the player object, localstorage and from the display. 
+    button.addEventListener("click", ()=>{ //REMOVEPLAYER
+        //removing from display
+        nameDiv.remove(); //nameDiv
+
+        //Removing from the player object
+        delete players[name];
+
+        //removed from localstorage due to this save. 
+        persistToLocalStorage();
+
+        /*When the last player is removed then the div contianing 
+        the names is removed (along with the button to start a game). */
+        if(!Object.keys(players).length) document.querySelector("#NameWrapper").remove();
+    });
+
+
+    //END OF DISPLAYPLAYER FUNCTION
+
+}
+
+//TODO TODO TODO TODO
 // function that is run when game is started with the startGame Button.
 
 function startGame(ev){
@@ -149,7 +147,8 @@ function startGame(ev){
     //Displays a button to end the game. 
     let endButton = document.createElement("button");
     endButton.innerText="End Game";
-    document.body.appendChild(endButton);
+    endButton.id ="EndButton"
+    document.querySelector("#StageWrapper").appendChild(endButton);
     
 
     //Checks are performed to make sure that every player has a registered score for each stage. 
@@ -179,6 +178,17 @@ function startGame(ev){
     
     
 }
+
+
+//Functionality to add the score of a particular hole to a player.  
+function addScore(name, hole, score){
+    players[name][hole] = score;
+
+}
+
+
+
+
 function playerHasScored(player){
     let playerHasScoredCorrectly = true;
     court.forEach(stage=>{
@@ -252,6 +262,8 @@ function renderStage(stage){
         //score
         let score = document.createElement("input");
         score.type = "number";
+        score.min = "1";
+        score.required = true;
         score.placeholder = "Enter score";
 
         //If there is a score saved in local storage - it is automatically filled to the input element
@@ -259,21 +271,24 @@ function renderStage(stage){
             score.value = players[p][stage.id];
         }
 
-        score.addEventListener("change", (e)=>{
-            //Upon changing the score in the input field, it should be reflected
-            //on the related player object. 
-            players[p][stage.id] = e.target.value;
-
-            //Calculating the total score is performed here
-            players[p]['score'] = 0; 
-            court.forEach(stage=>players[p]['score']+= parseInt(players[p][stage.id]));
-            persistToLocalStorage();
-
-        });
+        score.addEventListener("change",(e)=>scoreChanged(e,p, stage));
         scoreDiv.appendChild(score);
         scoreDiv.appendChild(document.createElement("br"));
 
-    }    
+    }
+}
+function scoreChanged(e, p, stage){
+    //Upon changing the score in the input field, it should be reflected
+    //on the related player object. 
+    if(!e.target.value) e.target.value = 1;
+
+    players[p][stage.id] = e.target.value;
+
+    //Calculating the total score is performed here
+    players[p]['score'] = 0; 
+    court.forEach(stage=>players[p]['score']+= parseInt(players[p][stage.id]));
+    persistToLocalStorage();
+
 }
 
 //Displays a leaderboard. 

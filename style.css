@@ -15,12 +15,12 @@
 #Start > form > *{
     width:max-content; margin:auto;
 }
-.nameDiv{
+#NameWrapper{
     display:grid;
     padding:30px;
     height:90vh;
 }
-.nameDiv button {
+#NameWrapper button {
     height:min-content;
     width:max-content;
 }
@@ -44,10 +44,14 @@
     text-decoration: underline;
 
 }
+#EndButton{
+    font-size: 20pt;
+    padding:1%;
+}
 .scoreboard{
     width:100%;
 }
-.scoreDiv, .nameWrapper{
+.scoreDiv, .nameDiv{
     display:grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
