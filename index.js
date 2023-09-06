@@ -4,7 +4,7 @@ const players = JSON.parse(localStorage.getItem("players")) || {};
 //This is black magic fuckery to display players collected from localStorage. 
 Object.keys(players).forEach(p=>{
     if(p=="") return;
-    addPlayer(p);
+    displayPlayer(p);
 });
 let court = [];
 
@@ -27,10 +27,10 @@ async function loadCourt(count = 14){
 }
 
 //Functionality for adding a player. To be used with Eventlistener. 
-function addPlayer(name){
-    //The player is added to the player object, which is also saved in localStorage. 
-    if (!players[name]) players[name] = {};
-    persistToLocalStorage();
+function displayPlayer(name){
+
+   
+
 
     //
     //DISPLAYING NAMES OF PLAYERS
@@ -100,7 +100,7 @@ function addScore(name, hole, score){
 
 }
 
-//Function that eventually calls addPlayer() after input validation has taken place. 
+//Gives the form functionality to add a player - Input validation is taking place here. 
 document.getElementById("registerForm").addEventListener("submit", (e)=>{
     //Prevents the forms usual get-request.
     e.preventDefault();
@@ -114,7 +114,17 @@ document.getElementById("registerForm").addEventListener("submit", (e)=>{
     //If the name is empty or was full of whitespace characters (removed by trim) - the function will return. 
     if(!name) return;
 
-    addPlayer(name);
+    //if there is a player with a duplicate name, the function returns as nothing should happen here. 
+    if (players[name]) return;
+
+    //If there's no player with that name, it is 'created' by adding it to the object.
+    players[name] = {};
+
+    //we also save to localStorage. 
+    persistToLocalStorage();
+ 
+    //Then the player name element is rendered with the function below. 
+    displayPlayer(name);
 });
 
 // function that is run when game is started with the startGame Button.
@@ -127,7 +137,7 @@ function startGame(ev){
     if(!ev.isTrusted) return console.error("Please add a player and press the button again");
 
     //If there are no players present, the code will exit and the game is not started 
-    //- however this should not occur.
+    //- however this should not occur through regular usage. 
     if(!Object.keys(players).length) return console.error("There are no players");
 
     //Remove start menu
@@ -139,19 +149,46 @@ function startGame(ev){
     //Displays a button to end the game. 
     let endButton = document.createElement("button");
     endButton.innerText="End Game";
+    document.body.appendChild(endButton);
+    
 
     //Checks are performed to make sure that every player has a registered score for each stage. 
     endButton.addEventListener("click", ()=>{
-        let gameIsCompleteBool = true;
-        court.forEach(stage=>{
-            if(!players[stage.id]){
-                gameIsCompleteBool = false;
-                return
-            }
-        })
-        if(gameIsCompleteBool) return endGame();
-    });
+        //Bool that is used to determine wether or not the game is actually complete or not. 
+        let gameIsComplete = true;
 
+        /* Each players score is checked to make sure they have scored each stage (which otherwise would)
+        Affect the scores to an unfair advantage (if the score calculates that is - most of the time it)
+        becomes "NaN". */
+        Object.keys(players).forEach(p => {
+            gameIsComplete=playerHasScored(players[p]);
+            
+            //Because i don't want to keep track of which player hasn't scored correctly - the loop over players is interrupted as gameIsComplete should be false. 
+            if(!gameIsComplete) return;
+        });
+        
+        //If the game isn't complete, this errors to console for now. 
+        if(!gameIsComplete)return console.error("All players hasn't scored correctly on each stage");
+
+        //If we reach this else block, then we know for sure that the game is finished and that each player has scored correctly. 
+        else {
+            endGame();
+        }
+    });
+    
+    
+}
+function playerHasScored(player){
+    let playerHasScoredCorrectly = true;
+    court.forEach(stage=>{
+    
+        console.log(player[stage.id]);
+        
+
+        if(!player[stage.id]) return gameIsComplete = false;      
+    });
+    console.log("Player has scored: " + playerHasScoredCorrectly)
+    return playerHasScoredCorrectly;
     
 }
 
@@ -229,27 +266,6 @@ function renderStage(stage){
             //Calculating the total score is performed here
             players[p]['score'] = 0; 
             court.forEach(stage=>players[p]['score']+= parseInt(players[p][stage.id]));
-            
-            //Debugging 
-            console.log(players[p]);
-            
-            /*CALCULATE TOTAL SCORE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-             HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-              HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-               HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                 HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                   HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                    HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                     HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                      HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                       HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                        HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                         HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE  HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                          HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE 
-                          
-             */
             persistToLocalStorage();
 
         });
@@ -259,13 +275,38 @@ function renderStage(stage){
     }    
 }
 
-//Button to end the game and display 
+//Displays a leaderboard. 
 function endGame(){
+    document.querySelector("#StageWrapper").remove();
     
-    //Shows a leaderboard
     let leaderboard = document.createElement("div");
     leaderboard.id = "leaderboard";
     document.body.appendChild(leaderboard);
+
+
+    let h1 = document.createElement("h1");
+    h1.innerText="Leaderboard";
+    leaderboard.appendChild(h1);
+
+
+    Object.keys(players).forEach(name=>{
+        
+    
+        // diaplays name and score for each player
+        let nameWrapper = document.createElement("div");
+        nameWrapper.classList.add("nameWrapper");
+        leaderboard.appendChild(nameWrapper);
+
+        
+        let displayName = document.createElement("p");
+        displayName.innerText = name;
+        nameWrapper.appendChild(displayName);
+
+        let score = document.createElement("i");
+        score.innerText= players[name]['score'];
+        nameWrapper.appendChild(score);
+    })
+
 }
 function persistToLocalStorage(){
     if(!Object.keys(players).length) return localStorage.clear();
