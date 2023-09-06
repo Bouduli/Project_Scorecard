@@ -161,6 +161,7 @@ function startGame(ev){
         Affect the scores to an unfair advantage (if the score calculates that is - most of the time it)
         becomes "NaN". */
         Object.keys(players).forEach(p => {
+            if(!Object.keys(players[p]).length) return gameIsComplete = false;
             gameIsComplete=playerHasScored(players[p]);
             
             //Because i don't want to keep track of which player hasn't scored correctly - the loop over players is interrupted as gameIsComplete should be false. 
