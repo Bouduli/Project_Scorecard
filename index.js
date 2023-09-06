@@ -255,6 +255,9 @@ function scoreChanged(e, p, stage){
 //Function to perform logic to see if the game is supposed to be ending - afterwards it will display the leaderBoards 
 function endGame(ev){
 
+    //If event isn't trusted - it means that a user probably is running the function from console.
+    if(!ev.isTrusted) return console.error("Run the function from the button - don't try doing what you are doing")
+
     //keys of all the players - reused several times therefore a const var early. 
     const KEYS = Object.keys(players);
 
