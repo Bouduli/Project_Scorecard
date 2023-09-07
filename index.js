@@ -7,7 +7,7 @@ Object.keys(players).forEach(p=>displayPlayer(p));
 
 let court = [];
 //Fetch the game court... 
-loadCourt(4);
+loadCourt(15);
 async function loadCourt(count = 18){
     try {
         //Works as intended... for now. 
@@ -122,7 +122,9 @@ function displayPlayer(name){
 
         /*When the last player is removed then the div contianing 
         the names is removed (along with the button to start a game). */
-        if(!Object.keys(players).length) document.querySelector("#NameWrapper").remove();
+        if(!Object.keys(players).length){
+            document.querySelector("#NameWrapper").remove();
+        }
     });
 
 
