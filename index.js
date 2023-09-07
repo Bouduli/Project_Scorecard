@@ -7,7 +7,7 @@ Object.keys(players).forEach(p=>displayPlayer(p));
 
 let court = [];
 //Fetch the game court... 
-loadCourt(15);
+loadCourt(5);
 async function loadCourt(count = 18){
     try {
         //Works as intended... for now. 
@@ -279,15 +279,18 @@ function endGame(ev){
                 */
 
     //If endingGame bool becomes therefore both forEach loops should return false. If both forEach's complete successfully - the bool should be true. 
+    let lastStageScoredByPlayer = 0;
     KEYS.forEach(player => {
-        court.forEach(stage =>{
-            
-            if(!players[player][stage.id]) return endingGame = false;
-            else endingGame = true;
-        });
-        console.log(`endingGame is: ${endingGame}; for player: ${player}`);
-        if(!endingGame) return;
+        const stagesScored = findLastStageScored(player)
+        lastStageScoredByPlayer = stagesScored<lastStageScoredByPlayer ? stagesScored : lastStageScoredByPlayer;    
+        
+        
     });
+    
+    console.log("All players have scored until " + lastStageScoredByPlayer);
+
+
+    return; 
     //If we are not ending the game - function is returned with a console error
     if(!endingGame)return console.error("All players hasn't scored correctly on each stage - can't end game");
     
@@ -335,6 +338,22 @@ function endGame(ev){
         nameWrapper.appendChild(score);
     });
 
+}
+function findLastStageScored(player){
+    let lastStage = 0;
+    try {
+        court.forEach(stage =>{
+            console.log(`stage: ${stage.id}`);
+            if(!players[player][stage.id])  {
+                lastStage = stage.id;
+                throw "fuck this"
+            };
+        });
+    } catch (error) {
+    }
+    
+    console.log(lastStage);
+    return lastStage
 }
 
 
