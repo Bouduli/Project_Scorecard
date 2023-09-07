@@ -11,7 +11,7 @@ loadCourt(5);
 async function loadCourt(count = 18){
     try {
         //Works as intended... for now. 
-        let response = await fetch("https://fpgscore.fredricpersson2.repl.co/info.json");
+        let response = await fetch("info.json");
         const courtData = await response.json();
         
         //Takes a slice out of the court in order to have shorter games. 
@@ -281,15 +281,14 @@ function endGame(ev){
     //If endingGame bool becomes therefore both forEach loops should return false. If both forEach's complete successfully - the bool should be true. 
     let lastStageScoredByPlayer = 0;
     KEYS.forEach(player => {
-        const stagesScored = findLastStageScored(player)
-        lastStageScoredByPlayer = stagesScored<lastStageScoredByPlayer ? stagesScored : lastStageScoredByPlayer;    
-        
-        
-    });
+        const stagesScored = findLastStageScored(player)-1;
+        console.log(stagesScored);
+        if(stagesScored<lastStageScoredByPlayer || !lastStageScoredByPlayer) lastStageScoredByPlayer = stagesScored;});
+        console.log(lastStageScoredByPlayer);
     
     console.log("All players have scored until " + lastStageScoredByPlayer);
-
-
+    const NEWCOURT = court.slice(0,lastStageScoredByPlayer);
+    console.log(NEWCOURT);
     return; 
     //If we are not ending the game - function is returned with a console error
     if(!endingGame)return console.error("All players hasn't scored correctly on each stage - can't end game");
@@ -339,21 +338,29 @@ function endGame(ev){
     });
 
 }
+//This function should return the index of the last stage a player has scored - as it will be used
+// to display the leaderboard at that stage. 
 function findLastStageScored(player){
     let lastStage = 0;
-    try {
-        court.forEach(stage =>{
-            console.log(`stage: ${stage.id}`);
-            if(!players[player][stage.id])  {
-                lastStage = stage.id;
-                throw "fuck this"
-            };
-        });
-    } catch (error) {
-    }
-    
-    console.log(lastStage);
-    return lastStage
+
+    /*This might look funny - therefore below is an explanation of the issue. 
+        I want to know which is the last stage a player has correctly scored. 
+        To do this - i loop over each stage in court - and sees if there is a key-value-pair
+        for the player on that stage. If there isn't - i want to stop the forEach loop, and 
+    */
+   for(let i = 0; i<court.length; i++){
+    lastStage = court[i].id;
+    if(!players[player][court[i].id])break;
+   }
+    // try {
+    //     court.forEach(stage =>{
+    //         lastStage = stage.id;
+    //         if(!players[player][stage.id])  throw "fuck this";
+    //     });
+    // } catch (error) {
+    // }
+
+    return lastStage;
 }
 
 
