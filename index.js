@@ -7,7 +7,7 @@ Object.keys(players).forEach(p=>displayPlayer(p));
 
 let court = [];
 //Fetch the game court... 
-loadCourt(5);
+loadCourt(7);
 async function loadCourt(count = 18){
     try {
         //Works as intended... for now. 
@@ -180,6 +180,7 @@ function renderStage(stage){
     /*A div for a single stage is created, a class to be css:ed is added, and is 
     then added to the StageWrapper*/
     const stageDiv = document.createElement("div");
+    stageDiv.id = stage.id;
     stageDiv.classList.add("stageDiv");
     StageWrapper.appendChild(stageDiv);
 
@@ -205,7 +206,6 @@ function renderStage(stage){
 
     //Individual score elements for every player
     for(let p in players){
-        
         //scoreDiv
         let scoreDiv = document.createElement("div");
         scoreDiv.classList.add("scoreDiv");
@@ -230,7 +230,7 @@ function renderStage(stage){
         score.addEventListener("change",(e)=>scoreChanged(e,p, stage));
 
         //If there already is a score (which would be loaded from localStorage.) then it is displayed as the value. 
-        if(p[stage.id]){
+        if(players[p][stage.id]){
             score.value = players[p][stage.id];
         }
 
@@ -243,13 +243,16 @@ function renderStage(stage){
 function scoreChanged(e, p, stage){
     //Upon changing the score in the input field, it should be reflected
     //on the related player object. 
-    if(!e.target.value) e.target.value = 1;
-
+    // console.log(`stageid: ${stage.id} - value ${e.target.value}`);
     players[p][stage.id] = e.target.value;
 
     //Calculating the total score is performed here
     players[p]['score'] = 0; 
-    court.forEach(stage=>players[p]['score']+= parseInt(players[p][stage.id]));
+    court.forEach(s=>{
+        let scoreByPlayer = players[p][s.id];
+        if(!scoreByPlayer) return;
+        players[p]['score']+= parseInt(players[p][s.id]);
+    });
     persistToLocalStorage();
 
 }
@@ -278,23 +281,18 @@ function endGame(ev){
                 the input element - their calculated score would be NaN, as it's trying to calculate (number + 'empty string') as an integer. 
                 */
 
-    //If endingGame bool becomes therefore both forEach loops should return false. If both forEach's complete successfully - the bool should be true. 
     let lastStageScoredByPlayer = 0;
     KEYS.forEach(player => {
-        const stagesScored = findLastStageScored(player)-1;
-        console.log(stagesScored);
-        if(stagesScored<lastStageScoredByPlayer || !lastStageScoredByPlayer) lastStageScoredByPlayer = stagesScored;});
-        console.log(lastStageScoredByPlayer);
+        const stagesScored = findLastStageScored(player);
+        if(stagesScored<lastStageScoredByPlayer || !lastStageScoredByPlayer) lastStageScoredByPlayer = stagesScored;
+    });
     
     console.log("All players have scored until " + lastStageScoredByPlayer);
-    const NEWCOURT = court.slice(0,lastStageScoredByPlayer);
-    console.log(NEWCOURT);
-    return; 
-    //If we are not ending the game - function is returned with a console error
-    if(!endingGame)return console.error("All players hasn't scored correctly on each stage - can't end game");
+    
     
     //Individual stage info is removed
-    document.querySelector("#StageWrapper").remove();
+    document.querySelector("#StageWrapper").classList.toggle("hidden");
+
 
     //a leaderboard div is created and a heading for it. 
     let leaderboard = document.createElement("div");
@@ -302,9 +300,33 @@ function endGame(ev){
     document.body.appendChild(leaderboard);
 
 
-    let h1 = document.createElement("h1");
-    h1.innerText="Leaderboard";
-    leaderboard.appendChild(h1);
+    let heading = document.createElement("h1");
+    heading.innerText="Leaderboard";
+    leaderboard.appendChild(heading);
+
+    //Shows a message if not all players have scored in the leaderboard. 
+    if (!lastStageScoredByPlayer==court.length){
+        let gameNotFinishedWarning = document.createElement("i");
+        gameNotFinishedWarning.innerText = "Some players are missing score data, see extended info";
+        leaderboard.appendChild(gameNotFinishedWarning);
+    }
+
+    let backButton = document.createElement("button");
+    backButton.innerText = "Return to stages";
+    backButton.addEventListener("click", ()=>{
+        document.querySelector("#StageWrapper").classList.toggle("hidden");
+        leaderboard.remove();
+
+    });
+    leaderboard.appendChild(backButton);
+
+    let showTableButton = document.createElement("button");
+    showTableButton.innerText = "Show game score table";
+    showTableButton.addEventListener("click", ()=>{
+        leaderboard.classList.toggle("hidden");
+        createTable(players, court);
+    })
+
 
 
     //The players are sorted with KEYS.toSorted(...) which returns an array of the player keys
@@ -351,6 +373,7 @@ function findLastStageScored(player){
    for(let i = 0; i<court.length; i++){
     lastStage = court[i].id;
     if(!players[player][court[i].id])break;
+
    }
     // try {
     //     court.forEach(stage =>{
@@ -359,7 +382,6 @@ function findLastStageScored(player){
     //     });
     // } catch (error) {
     // }
-
     return lastStage;
 }
 

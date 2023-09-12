@@ -60,3 +60,6 @@
 .scoreDiv p{
     justify-self: center;
 }
+.hidden{
+    display:none !important;
+}
