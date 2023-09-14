@@ -274,6 +274,8 @@ function addInputFlair(el, par){
     children.forEach((ch=>{
         if(ch.classList.contains("material-icons")|| ch.classList.contains("BirdieEmojie")) ch.remove();
     }));
+
+    //If the value is 1, it means that a player has scored a Hoel in one-
     if (val==1){
         el.classList.toggle("greatScoreClass");
         let symbol = document.createElement("i");
@@ -281,6 +283,8 @@ function addInputFlair(el, par){
         symbol.innerText = "flag";
         el.parentElement.appendChild(symbol);
     }
+    //if the difference from par is 0 - it means they have exactly on par. which is why i indicate it 
+    //with an location symbol .
     else if (parDiff == 0){
         el.classList.toggle("greatScoreClass");
         let symbol = document.createElement("i");
@@ -288,6 +292,8 @@ function addInputFlair(el, par){
         symbol.innerText = "my_location";
         el.parentElement.appendChild(symbol);
     }
+    //If the pardiff is below zero - it means they perform better than par. Each
+    //score better than par is indicated by a birdie. (as it means they score a birdie - double birdie etc. )
     else if (parDiff<=0){
         el.classList.toggle("greatScoreClass");
         let symbol = document.createElement("p");
