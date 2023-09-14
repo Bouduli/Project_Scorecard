@@ -46,6 +46,7 @@ function registerPlayer(e){
 
     //if there is a name that isn't duplicated - the player is added to the player object. 
     players[name] = {};
+    players[name]['score']=0;
 
     //we also save to localStorage. 
     persistToLocalStorage();
@@ -150,7 +151,7 @@ function startGame(ev){
 
     //Displays a button to end the game. 
     let endButton = document.createElement("button");
-    endButton.innerText="End Game";
+    endButton.innerText="Show Scores";
     endButton.id ="EndButton"
     document.querySelector("#StageWrapper").appendChild(endButton);
     
@@ -231,20 +232,27 @@ function renderStage(stage){
 
         //If there already is a score (which would be loaded from localStorage.) then it is displayed as the value. 
         if(players[p][stage.id]){
+
             score.value = players[p][stage.id];
+            
+            addInputFlair(score, stage.par)
         }
 
-        //Adds a simple break tag to make som easy space between inputs. 
-        scoreDiv.appendChild(document.createElement("br"));
+        
 
     }
 }
+
 //Fired when score is changed. e: event, p: player. 
 function scoreChanged(e, p, stage){
+    addInputFlair(e.target, stage.par);
+    let input = parseInt(e.target.value);
     //Upon changing the score in the input field, it should be reflected
     //on the related player object. 
     // console.log(`stageid: ${stage.id} - value ${e.target.value}`);
-    players[p][stage.id] = e.target.value;
+    if(input<0) input = -input;
+    e.target.value = input;
+    players[p][stage.id] = input;
 
     //Calculating the total score is performed here
     players[p]['score'] = 0; 
@@ -255,6 +263,47 @@ function scoreChanged(e, p, stage){
     });
     persistToLocalStorage();
 
+}
+function addInputFlair(el, par){
+    if(el.classList.length) el.classList.remove(el.classList);
+    
+    let val = parseInt(el.value);
+    let parDiff = val-par;
+    if(!val) return el.classList.toggle("missingScoreClass");
+    let children = Array.from(el.parentElement.children);
+    children.forEach((ch=>{
+        if(ch.classList.contains("material-icons")|| ch.classList.contains("BirdieEmojie")) ch.remove();
+    }));
+    if (val==1){
+        el.classList.toggle("greatScoreClass");
+        let symbol = document.createElement("i");
+        symbol.classList.add("material-icons");
+        symbol.innerText = "flag";
+        el.parentElement.appendChild(symbol);
+    }
+    else if (parDiff == 0){
+        el.classList.toggle("greatScoreClass");
+        let symbol = document.createElement("i");
+        symbol.classList.add("material-icons");
+        symbol.innerText = "my_location";
+        el.parentElement.appendChild(symbol);
+    }
+    else if (parDiff<=0){
+        el.classList.toggle("greatScoreClass");
+        let symbol = document.createElement("p");
+        symbol.classList.add("BirdieEmojie")
+        symbolString="";
+        for(i = 0; i < -parDiff; i++){
+            console.log("Added Bird");
+            symbolString += "&#128038;"
+        }
+        symbol.innerHTML = symbolString;
+        el.parentElement.appendChild(symbol);
+    }
+
+
+
+    
 }
 
 //Function to perform logic to see if the game is supposed to be ending - afterwards it will display the leaderBoards 
@@ -283,7 +332,8 @@ function endGame(ev){
 
     let lastStageScoredByPlayer = 0;
     KEYS.forEach(player => {
-        const stagesScored = findLastStageScored(player);
+        let stagesScored = findLastStageScored(player);
+        console.log(`P: ${player} stagesScored: ${stagesScored}. (lastStageScored): ${lastStageScoredByPlayer} `);
         if(stagesScored<lastStageScoredByPlayer || !lastStageScoredByPlayer) lastStageScoredByPlayer = stagesScored;
     });
     
@@ -296,7 +346,7 @@ function endGame(ev){
 
     //a leaderboard div is created and a heading for it. 
     let leaderboard = document.createElement("div");
-    leaderboard.id = "leaderboard";
+    leaderboard.id = "Leaderboard";
     document.body.appendChild(leaderboard);
 
 
@@ -305,9 +355,9 @@ function endGame(ev){
     leaderboard.appendChild(heading);
 
     //Shows a message if not all players have scored in the leaderboard. 
-    if (!lastStageScoredByPlayer==court.length){
+    if (lastStageScoredByPlayer!=court.length){
         let gameNotFinishedWarning = document.createElement("i");
-        gameNotFinishedWarning.innerText = "Some players are missing score data, see extended info";
+        gameNotFinishedWarning.innerText = "Some players are missing score data, please check scores of each player";
         leaderboard.appendChild(gameNotFinishedWarning);
     }
 
@@ -315,6 +365,7 @@ function endGame(ev){
     backButton.innerText = "Return to stages";
     backButton.addEventListener("click", ()=>{
         document.querySelector("#StageWrapper").classList.toggle("hidden");
+        
         leaderboard.remove();
 
     });
@@ -371,9 +422,12 @@ function findLastStageScored(player){
         for the player on that stage. If there isn't - i want to stop the forEach loop, and 
     */
    for(let i = 0; i<court.length; i++){
-    lastStage = court[i].id;
-    if(!players[player][court[i].id])break;
 
+    let scoreat =players[player][court[i].id]; 
+
+    if( !scoreat)break;
+    lastStage = court[i].id;
+    
    }
     // try {
     //     court.forEach(stage =>{

@@ -15,12 +15,12 @@
 #Start > form > *{
     width:max-content; margin:auto;
 }
-#NameWrapper{
+#NameWrapper, #Leaderboard{
     display:grid;
     padding:30px;
     height:90vh;
 }
-#NameWrapper button {
+#NameWrapper button, #Leaderboard button {
     height:min-content;
     width:max-content;
 }
@@ -53,12 +53,22 @@
 }
 .scoreDiv, .nameDiv{
     display:grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
-
+    text-align: center;
+    
 }
 .scoreDiv p{
     justify-self: center;
+}
+.missingScoreClass{
+    background:red;
+}
+.HIOScoreClass{
+    background:gold;
+}
+.greatScoreClass{
+    background:mediumspringgreen;
 }
 .hidden{
     display:none !important;
