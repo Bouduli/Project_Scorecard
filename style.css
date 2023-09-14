@@ -56,7 +56,9 @@
     grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
     text-align: center;
-    
+    padding:4%;
+    border: 1px solid #303030;
+    gap: 5px;
 }
 .scoreDiv p{
     justify-self: center;
