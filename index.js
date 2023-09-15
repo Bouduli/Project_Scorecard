@@ -7,7 +7,7 @@ Object.keys(players).forEach(p=>displayPlayer(p));
 
 let court = [];
 //Fetch the game court... 
-loadCourt(7);
+loadCourt();
 async function loadCourt(count = 18){
     try {
         //Works as intended... for now. 
@@ -38,11 +38,11 @@ function registerPlayer(e){
 
     //If the name is empty or was full of whitespace characters (removed by trim) - the function should return
     //as we don't wan't player names to be empty. 
-    if(!name) return;
+    if(!name) return alert("Please enter a name");
 
     //if there is a player with that same name - the function should return as we don't want
     //players with duplicate names
-    if (players[name]) return;
+    if (players[name]) return alert("Please enter a unique name");
 
     //if there is a name that isn't duplicated - the player is added to the player object. 
     players[name] = {};
@@ -83,14 +83,7 @@ function displayPlayer(name){
         h2.innerText = "Players added to game:";
         NameWrapper.appendChild(h2);
 
-        //Button to start the game is also shown. 
-        let button = document.createElement("button");
-        button.id = "StartButton"
-        button.innerText = "Start Game!!";
-
-        //StartGame is defined below registerPlayer.
-        button.addEventListener("click", startGame);
-        NameWrapper.appendChild(button);
+        
     } 
 
     //DISPLAYING THE NAMES
@@ -125,10 +118,26 @@ function displayPlayer(name){
         the names is removed (along with the button to start a game). */
         if(!Object.keys(players).length){
             document.querySelector("#NameWrapper").remove();
+            document.getElementById("StartButton").remove();
         }
     });
 
 
+
+    //Button to start the game is also shown. 
+    let StartButton  = document.getElementById("StartButton");
+    if(!StartButton){
+        let button = document.createElement("button");
+        button.id = "StartButton"
+        button.innerText = "Start Game!!";
+
+        //StartGame is defined below registerPlayer.
+        button.addEventListener("click", startGame);
+        NameWrapper.after(button);
+        // NameWrapper.appendChild(button);
+
+    }
+    
     //END OF DISPLAYPLAYER FUNCTION
 
 }
@@ -138,10 +147,10 @@ function startGame(ev){
     /*Since the function can be called by a user with the console to prevent unintentional use
     Event.isTrusted is checked, an event created through console by a user has the property iTrusted=false. 
     Starting the game by other means than the button would lead to weird behaviour - therefore this if-statement prevents it. */
-    if(!ev.isTrusted) return console.error("Please add a player and press the button again");
+    if(!ev.isTrusted) return alert("Please add a player and press the button again");
 
     //If there are no players present, the code will exit and the game is not started
-    if(!Object.keys(players).length) return console.error("There are no players");
+    if(!Object.keys(players).length) return alert("There are no players");
 
     //Removes the start menu - as it's obsolete when the game has begun. 
     document.getElementById("Start").remove();
@@ -168,7 +177,7 @@ function renderStage(stage){
     /*Inspecting the JSON collected for the court - it shows that every stage has a id, par value
     and related info. If such is not provided in the stage, then it is incorrectly configured - thus 
     the code errors in console. */
-    if(!stage.id || !stage.par || !stage.info)return console.error(`The stage was incorrectly configured - Stage: ${stage}`);
+    if(!stage.id || !stage.par || !stage.info)return alert(`The stage was incorrectly configured - Stage: ${stage}`);
 
     //A wrapper div for the stage elements, StageWrapper,  is created if such a div cannot be found. 
     let StageWrapper = document.getElementById("StageWrapper");
@@ -178,6 +187,7 @@ function renderStage(stage){
         StageWrapper.id = "StageWrapper";
         document.body.appendChild(StageWrapper);
     }
+    
     /*A div for a single stage is created, a class to be css:ed is added, and is 
     then added to the StageWrapper*/
     const stageDiv = document.createElement("div");
@@ -223,7 +233,7 @@ function renderStage(stage){
         score.type = "number";
         score.min = "1";
         score.required = true;
-        score.placeholder = "Enter score";
+        score.placeholder = "Score";
         scoreDiv.appendChild(score);
 
         //if the score is changed - relevant logic for calculating totalscore and saving to localStorage
@@ -326,7 +336,7 @@ function endGame(ev){
     
 
     //if there are no player keys somehow - the game cannot end as there are no players. 
-    if (!KEYS.length) return console.error("no players - can't end game");
+    if (!KEYS.length) return alert("no players - can't end game");
 
     //We are looping over the keys for each player, and for each stage - in order to determine if all players
     /*Have inputted a score on each of the stages. This has two reasons for which - expand this comment block. 
@@ -402,18 +412,50 @@ function endGame(ev){
         
     
         // diaplays name and score for each player
-        let nameWrapper = document.createElement("div");
-        nameWrapper.classList.add("nameWrapper");
-        leaderboard.appendChild(nameWrapper);
+        let resultDiv = document.createElement("div");
+        resultDiv.classList.add("resultDiv");
+        leaderboard.appendChild(resultDiv);
 
         
         let displayName = document.createElement("p");
-        displayName.innerText = name;
-        nameWrapper.appendChild(displayName);
+        displayName.innerText = name + ": ";
+        resultDiv.appendChild(displayName);
 
         let score = document.createElement("i");
         score.innerText= players[name]['score'];
-        nameWrapper.appendChild(score);
+        resultDiv.appendChild(score);
+
+
+        //Copied from displaying names in the first menu
+        //Displays a button to remove a registered player. 
+        let button = document.createElement("button");
+        button.innerText="Remove";
+        resultDiv.appendChild(button); 
+        
+        //When a player is removed - they are removed from the player object, localstorage and from the display. 
+        button.addEventListener("click", ()=>{ //REMOVEPLAYER
+
+            if(!confirm("Are you sure you want to remove a player and their scores?"))return;
+
+            //removing from display
+
+            resultDiv.remove(); //nameDiv
+
+            //Removing from the player object
+            delete players[name];
+
+            //removed from localstorage due to this save. 
+            persistToLocalStorage();
+
+            if(!Object.keys(players).length){
+                alert("All players are removed - site will reload to continue");
+                location.reload();
+            }
+            //StageWrapper is emptied and scoredivs are rendered again in order to not include the player, 
+            document.getElementById("StageWrapper").innerHTML  ="";
+            court.forEach(C=>renderStage(C));
+            
+        });
     });
 
 }

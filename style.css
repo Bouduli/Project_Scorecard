@@ -2,15 +2,27 @@
     margin: 0;padding: 0;
     box-sizing: border-box;
     text-decoration: none;
+    font-size:1.05em;
+}
+.material-icons{
+    font-size: 2rem !important;
 }
 
 #Start{
+    text-align:center;
     padding:4%;
+    gap:30px;
+    display:grid;    
+}
+
+#Start h1{
+    gap:20px;
+    text-decoration: underline;
 }
 #Start > form{
     display:flex;
     width:100%;
-    flex:12
+    flex:12;
 }
 #Start > form > *{
     width:max-content; margin:auto;
@@ -19,10 +31,19 @@
     display:grid;
     padding:30px;
     height:90vh;
+    place-items:center;
 }
-#NameWrapper button, #Leaderboard button {
+#StartButton, #EndButton, #Leaderboard button {
+    border-top: 1px solid #303030;
+
+    position:sticky;
     height:min-content;
-    width:max-content;
+    font-size:20pt;
+    padding:1%;
+    bottom:0;
+    z-index:3;
+    width:100%;
+    
 }
 
 #StageWrapper{
@@ -44,24 +65,44 @@
     text-decoration: underline;
 
 }
-#EndButton{
-    font-size: 20pt;
-    padding:1%;
-}
+
 .scoreboard{
     width:100%;
 }
-.scoreDiv, .nameDiv{
+.scoreDiv, .nameDiv,  .resultDiv{
     display:grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     align-items: center;
     text-align: center;
     padding:4%;
-    border: 1px solid #303030;
+    border-bottom: 1px solid #303030;
     gap: 5px;
+}
+.scoreDiv , .resultDiv{
+    grid-template-columns: 1fr 1fr 1fr;
+}
+.scoreDiv:last-child , .nameDiv:last-child , .resultDiv:last-child{
+    border-bottom:none;
+}
+button{
+    background:whitesmoke;
+    border:none;
+    border-bottom:1px solid gray;
+
+    width:fit-content;
+    transition:0.51s;
+}
+button:hover{
+
+    background:black;
+    color:white;
 }
 .scoreDiv p{
     justify-self: center;
+}
+.scoreDiv input[type=number]{
+    min-width: 30%;
+    width:auto;
 }
 .missingScoreClass{
     background:red;
